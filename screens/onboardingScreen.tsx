@@ -6,7 +6,6 @@ import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
 export default function OnboardingScreen({ navigation }: { navigation: any }) {
   return (
     <Onboarding
-      imageContainerStyles={styles.container}
       pages={[
         {
           backgroundColor: "lightgreen",
@@ -62,7 +61,6 @@ const Done = ({ ...props }) => (
 );
 
 const styles = StyleSheet.create({
-  container: {},
   onboardingImage: {
     height: 256,
     resizeMode: "contain",

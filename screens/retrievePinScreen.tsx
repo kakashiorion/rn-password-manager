@@ -14,6 +14,7 @@ import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
 import { GetCodeButton } from "../components/buttons/ResetPinButton";
 import { generateCode, getUserData } from "../utils/methods";
 import { RouteProp } from "@react-navigation/native";
+import emailJS from "@emailjs/browser";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
@@ -22,7 +23,7 @@ export default function RetrievePinScreen({
   route,
   navigation,
 }: {
-  route: RouteProp<{ params: { user: string; email: string } }, "params">;
+  route: RouteProp<{ params: { username: string; email: string } }, "params">;
   navigation: any;
 }) {
   const [email, setEmail] = useState("");
@@ -39,9 +40,10 @@ export default function RetrievePinScreen({
             source={require(`../assets/${logoUrl}`)}
             style={styles.logoImage}
           ></Image>
-          <Text style={styles.titleText}>Hi {route.params.user}!</Text>
+          <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
-            Looks like you forgot your PIN. We will send a code to your email.
+            Looks like you forgot your PIN. Don't worry. We will send a code to
+            your email.
           </Text>
           <TextInput
             style={styles.usernameInput}
@@ -56,12 +58,22 @@ export default function RetrievePinScreen({
               if (val.exists()) {
                 //If yes, navigate to reset pin screen
                 navigation.navigate("ResetPin", {
-                  user: route.params.user,
+                  username: route.params.username,
                   email: email,
                 });
                 //Meanwhile, generate a new code in FireDB for this user
-                generateCode(email);
+                const code = generateCode(email);
                 //TODO:Email code to the user
+                emailJS.send(
+                  "service_tnhdkjl",
+                  "template_x865tpo",
+                  {
+                    email: email,
+                    name: route.params.username,
+                    code: code.toString(),
+                  },
+                  "IufKPtYnPInbXK1wa"
+                );
               } else {
                 //If no, show unregistered error
                 Alert.alert("No such email is registered!");

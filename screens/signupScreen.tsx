@@ -11,10 +11,6 @@ import {
 import React, { useState } from "react";
 import SignupButton from "../components/buttons/SignupButton";
 import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
-import {
-  SignupButtonWithFacebook,
-  SignupButtonWithGoogle,
-} from "../components/buttons/SignupButtonWithIcon";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
@@ -55,14 +51,11 @@ export default function SignupScreen({ navigation }: { navigation: any }) {
           <SignupButton
             onClick={() => {
               navigation.navigate("SetPin", {
-                user: username,
+                username: username,
                 email: email,
               });
             }}
           />
-          <Text style={styles.orText}>OR</Text>
-          <SignupButtonWithGoogle onClick={() => {}} />
-          <SignupButtonWithFacebook onClick={() => {}} />
         </View>
       </TouchableWithoutFeedback>
     </ImageBackground>
@@ -141,16 +134,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "90%",
     color: myColors.primaryColor,
-  },
-  pinInput: {
-    width: "50%",
-    marginBottom: 32,
-  },
-  orText: {
-    fontSize: myFontSizes.regular,
-    textAlign: "center",
-    marginVertical: 24,
-    fontFamily: myFontFamilies.bold,
-    color: myColors.darkGrayColor,
   },
 });

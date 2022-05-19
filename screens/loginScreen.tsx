@@ -20,8 +20,13 @@ const logoUrl = "PMLogo.png";
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [pinTextValue, setPinTextValue] = useState("");
   const [fingerAllowed, setFingerAllowed] = useState(false);
-  const [forgotPin, setForgotPin] = useState(false);
-  const [username, setUsername] = useState("");
+  // const [forgotPin, setForgotPin] = useState(false);
+  const [deviceUser, setDeviceUser] = useState({
+    username: "",
+    email: "",
+    pin: "",
+  });
+  // const [email, setEmail] = useState("");
 
   const authenticateFingerprint = async () => {
     const supportedAuths =
@@ -29,7 +34,10 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     if (supportedAuths.includes(1)) {
       const result = await LocalAuthentication.authenticateAsync();
       if (result.success) {
-        navigation.navigate("Home");
+        navigation.navigate("Home", {
+          username: deviceUser.username,
+          email: deviceUser.email,
+        });
       }
     }
   };
@@ -37,7 +45,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     (async () => {
       await getLocalData("user").then((data) => {
         if (data) {
-          setUsername(data);
+          setDeviceUser(JSON.parse(data));
         }
       });
       await authenticateFingerprint();
@@ -53,19 +61,21 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     setPinTextValue(value);
     if (value.length > 3) {
       //Try to match entered PIN
-      getLocalData("LoginPIN").then((devicePIN) => {
-        if (devicePIN == value) {
-          // If PIN matches, navigate to Home Screen
-          navigation.navigate("Home");
-        } else {
-          //If PIN does not match, show alert
-          Alert.alert("Incorrect PIN");
-          //Also start showing forgot PIN CTA
-          setForgotPin(true);
-        }
-        //Clear PIN field text
-        setPinTextValue("");
-      });
+      const devicePin = deviceUser.pin;
+      if (devicePin == value) {
+        // If PIN matches, navigate to Home Screen
+        navigation.navigate("Home", {
+          username: deviceUser.username,
+          email: deviceUser.email,
+        });
+      } else {
+        //If PIN does not match, show alert
+        Alert.alert("Incorrect PIN");
+        //Also start showing forgot PIN CTA
+        // setForgotPin(true);
+      }
+      //Clear PIN field text
+      setPinTextValue("");
     }
   };
 
@@ -83,12 +93,12 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             style={styles.logoImage}
           ></Image>
           <Text style={styles.welcomeText}>
-            Welcome back, {username.split(" ")[0]}!
+            Welcome back, {deviceUser.username}!
           </Text>
           <Text style={styles.subTitleText}>
             To securely access your data, please enter your PIN
           </Text>
-          <Text style={styles.headerText}>Enter your PIN</Text>
+          <Text style={styles.headerText}>Enter PIN</Text>
 
           <TextInput
             style={styles.pinInput}
@@ -98,16 +108,18 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             onChangeText={handleInput}
             textAlign="center"
           />
-          {forgotPin ? (
-            <Text
-              style={styles.forgotText}
-              onPress={() => {
-                navigation.navigate("RetrievePin", { user: username });
-              }}
-            >
-              Forgot your pin?
-            </Text>
-          ) : null}
+          {/* {forgotPin ? ( */}
+          <Text
+            style={styles.forgotText}
+            onPress={() => {
+              navigation.navigate("RetrievePin", {
+                username: deviceUser.username,
+              });
+            }}
+          >
+            Forgot your pin?
+          </Text>
+          {/* ) : null} */}
           {fingerAllowed ? (
             <>
               <Text style={[styles.headerText, styles.orText]}>OR</Text>

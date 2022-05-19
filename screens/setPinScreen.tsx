@@ -22,7 +22,7 @@ export default function SetPinScreen({
   route,
   navigation,
 }: {
-  route: RouteProp<{ params: { user: string; email: string } }, "params">;
+  route: RouteProp<{ params: { username: string; email: string } }, "params">;
   navigation: any;
 }) {
   const [firstPin, setFirstPin] = useState("");
@@ -41,7 +41,7 @@ export default function SetPinScreen({
             source={require(`../assets/${logoUrl}`)}
             style={styles.logoImage}
           ></Image>
-          <Text style={styles.titleText}>Hi {route.params.user}!</Text>
+          <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
             Great! Set a new pin which you can use to login from now on!
           </Text>
@@ -65,10 +65,22 @@ export default function SetPinScreen({
               if (t.length > 3) {
                 if (t == firstPin) {
                   Alert.alert(" PIN set successfully!");
-                  AsyncStorage.setItem("LoginPIN", t);
-                  AsyncStorage.setItem("user", route.params.email);
-                  navigation.navigate("Home");
-                  createUserWithEmail(route.params.email, route.params.user);
+                  AsyncStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                      username: route.params.username,
+                      email: route.params.email,
+                      pin: t,
+                    })
+                  );
+                  navigation.navigate("Home", {
+                    username: route.params.username,
+                    email: route.params.email,
+                  });
+                  createUserWithEmail(
+                    route.params.email,
+                    route.params.username
+                  );
                 } else {
                   Alert.alert("PIN does not match");
                   setConfirmPin("");
@@ -154,12 +166,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "70%",
     color: myColors.primaryColor,
-  },
-  orText: {
-    fontSize: myFontSizes.regular,
-    textAlign: "center",
-    marginVertical: 24,
-    fontFamily: myFontFamilies.bold,
-    color: myColors.darkGrayColor,
+    letterSpacing: 2,
   },
 });

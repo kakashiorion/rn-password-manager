@@ -21,7 +21,7 @@ export default function ResetPinScreen({
   route,
   navigation,
 }: {
-  route: RouteProp<{ params: { user: string; email: string } }, "params">;
+  route: RouteProp<{ params: { username: string; email: string } }, "params">;
   navigation: any;
 }) {
   const [codeTextValue, setCodeTextValue] = useState("");
@@ -33,7 +33,7 @@ export default function ResetPinScreen({
       // If Code matches, navigate to Home Screen
       if (dbCode.exists() && dbCode.data()["code"] == value) {
         navigation.navigate("SetPin", {
-          user: route.params.user,
+          username: route.params.username,
           email: route.params.email,
         });
       } else {
@@ -58,7 +58,7 @@ export default function ResetPinScreen({
             source={require(`../assets/${logoUrl}`)}
             style={styles.logoImage}
           ></Image>
-          <Text style={styles.titleText}>Hi {route.params.user}!</Text>
+          <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
             We have sent a special 6-digit code to your email address!
           </Text>

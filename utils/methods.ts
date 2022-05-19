@@ -25,6 +25,7 @@ export function generateCode(email: string) {
     code: val,
   };
   setDoc(myDocument, data, { merge: true });
+  return val;
 }
 
 export async function getUserData(email: string) {

@@ -94,9 +94,6 @@ export default function App() {
             options={{
               headerShown: false,
             }}
-            initialParams={{
-              user: "",
-            }}
           />
           <SignupStack.Screen
             name="Home"
