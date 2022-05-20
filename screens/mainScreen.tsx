@@ -2,14 +2,16 @@ import React from "react";
 import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
 import { NavigationContainer, RouteProp } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MainScreen from "./home/mainScreen";
-import SettingsScreen from "./home/settingsScreen";
-import ProfileScreen from "./home/profileScreen";
+import HomeScreenStack from "./home/homeScreenStack";
+import SettingsScreen from "./settings/settingsScreen";
+import ProfileScreen from "./profile/profileScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Platform } from "react-native";
 
 const BottomTab = createBottomTabNavigator();
-export default function HomeScreen({
+
+//This screen opens up and takes control when the user successfully logs in
+export default function MainScreen({
   navigation,
   route,
 }: {
@@ -24,7 +26,7 @@ export default function HomeScreen({
     <NavigationContainer independent={true}>
       <BottomTab.Navigator
         screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
+          tabBarIcon: ({ focused, color }) => {
             let iconName: any;
             if (route.name === "Home") {
               iconName = focused ? "home" : "home-outline";
@@ -33,16 +35,18 @@ export default function HomeScreen({
             } else if (route.name === "Profile") {
               iconName = focused ? "person" : "person-outline";
             }
-            return <Ionicons name={iconName} size={size} color={color} />;
+            return <Ionicons name={iconName} size={24} color={color} />;
           },
-          tabBarLabelStyle: {
-            fontSize: myFontSizes.xs,
-            fontFamily: myFontFamilies.regular,
-            paddingBottom: Platform.OS === "ios" ? 0 : 8,
-          },
+          tabBarShowLabel: false,
+          // tabBarLabelStyle: {
+          //   fontSize: myFontSizes.xs,
+          //   fontFamily: myFontFamilies.regular,
+          //   paddingBottom: Platform.OS === "ios" ? 0 : 8,
+          // },
           tabBarStyle: {
-            paddingTop: 8,
-            height: Platform.OS === "ios" ? 84 : 68,
+            backgroundColor: myColors.tertiaryColor,
+            opacity: 0.8,
+            height: Platform.OS === "ios" ? 84 : 64,
           },
           tabBarActiveTintColor: myColors.primaryColor,
           tabBarInactiveTintColor: myColors.darkGrayColor,
@@ -50,7 +54,7 @@ export default function HomeScreen({
       >
         <BottomTab.Screen
           name="Home"
-          component={MainScreen}
+          component={HomeScreenStack}
           options={{
             headerShown: false,
           }}

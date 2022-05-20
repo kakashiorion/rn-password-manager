@@ -34,7 +34,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     if (supportedAuths.includes(1)) {
       const result = await LocalAuthentication.authenticateAsync();
       if (result.success) {
-        navigation.navigate("Home", {
+        navigation.navigate("Main", {
           username: deviceUser.username,
           email: deviceUser.email,
         });
@@ -63,8 +63,8 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
       //Try to match entered PIN
       const devicePin = deviceUser.pin;
       if (devicePin == value) {
-        // If PIN matches, navigate to Home Screen
-        navigation.navigate("Home", {
+        // If PIN matches, login and navigate to Main Screen
+        navigation.navigate("Main", {
           username: deviceUser.username,
           email: deviceUser.email,
         });
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     overflow: "hidden",
-    // minHeight: "70%",
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,

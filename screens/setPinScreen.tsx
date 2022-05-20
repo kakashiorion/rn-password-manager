@@ -73,7 +73,7 @@ export default function SetPinScreen({
                       pin: t,
                     })
                   );
-                  navigation.navigate("Home", {
+                  navigation.navigate("Main", {
                     username: route.params.username,
                     email: route.params.email,
                   });

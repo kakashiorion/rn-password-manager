@@ -1,56 +1,48 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  FlatList,
-  Platform,
-} from "react-native";
 import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  TextInput,
+  View,
+  Text,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { AccountListItem } from "../../components/containers/AccountListItem";
 import { myColors, myFontFamilies, myFontSizes } from "../../styles/global";
-import { getLocalData } from "../../utils/methods";
+import {
+  getAllAccountPasswordsFromDB,
+  getLocalData,
+} from "../../utils/methods";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import AddAccountScreen from "./addAccountScreen";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { DocumentData } from "firebase/firestore";
 
-const MainStack = createNativeStackNavigator();
-
-export default function MainScreen({ navigation }: { navigation: any }) {
-  return (
-    <MainStack.Navigator>
-      <MainStack.Screen
-        name="MainHome"
-        component={MainHomeScreen}
-        options={{
-          headerShown: false,
-          animation: "slide_from_right",
-        }}
-      />
-      <MainStack.Screen
-        name="AddAccount"
-        component={AddAccountScreen}
-        options={{
-          headerShown: false,
-          animation: "slide_from_bottom",
-        }}
-      />
-    </MainStack.Navigator>
-  );
-}
-
-function MainHomeScreen({ navigation }: { navigation: any }) {
+export default function HomeScreen({ navigation }: { navigation: any }) {
   const [deviceUser, setDeviceUser] = useState({
     username: "",
     email: "",
     pin: "",
   });
+  const [accounts, setAccounts] = useState([] as any);
+  const [filteredAccounts, setFilteredAccounts] = useState([] as any);
+
   useEffect(() => {
-    getLocalData("user").then((data) => {
-      if (data) {
-        setDeviceUser(JSON.parse(data));
-      }
-    });
-  }, []);
+    getLocalData("user")
+      .then((data) => {
+        if (data) {
+          const userData = JSON.parse(data);
+          setDeviceUser(userData);
+          return userData;
+        }
+      })
+      .then(async (data) => {
+        const dataFromDB = await getAllAccountPasswordsFromDB(data.email);
+        let dataArray: DocumentData[] = [];
+        dataFromDB.forEach((item) => dataArray.push(item.data()));
+        setAccounts(dataArray);
+        setFilteredAccounts(dataArray);
+      });
+  }, [accounts]);
   return (
     <View style={styles.homeContainer}>
       {/* Welcome header */}
@@ -60,38 +52,48 @@ function MainHomeScreen({ navigation }: { navigation: any }) {
       </View>
       {/* Search bar */}
       <View style={styles.searchContainer}>
-        <TextInput style={styles.searchInputText} placeholder="Search" />
+        <TextInput
+          style={styles.searchInputText}
+          placeholder="Search"
+          onChangeText={(t) => {
+            setFilteredAccounts(
+              accounts.filter((item: any) =>
+                item.accountName.toLowerCase().includes(t.toLowerCase())
+              )
+            );
+          }}
+        />
         <Ionicons name="search" size={20} style={styles.searchIcon} />
       </View>
       {/* List of passwords */}
       <View style={styles.listContainer}>
         <Text style={styles.listTitle}>Your saved passwords</Text>
         <FlatList
-          renderItem={({ item }) => <ListItem item={item} />}
-          data={["A", "B", "C", "A", "B", "C", "A", "B", "C", "A", "B", "C"]}
+          renderItem={({ item }) => (
+            <AccountListItem
+              accountName={item.accountName}
+              password={item.password}
+            />
+          )}
+          data={filteredAccounts}
           style={styles.flatList}
         ></FlatList>
       </View>
       {/* Add Account Button*/}
-      <View style={styles.addButton}>
-        <Ionicons
-          name="add"
-          size={32}
-          style={styles.addIcon}
-          onPress={() => navigation.navigate("AddAccount")}
-        />
-      </View>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate("AddAccount")}
+      >
+        <Ionicons name="add" size={32} style={styles.addIcon} />
+      </TouchableOpacity>
     </View>
   );
 }
 
-function ListItem(props: any) {
-  return (
-    <View style={styles.listItem}>
-      <Text>{props.item}</Text>
-    </View>
-  );
-}
+const sampleAccountData = {
+  accountName: "React",
+  password: "1234567",
+};
 
 const styles = StyleSheet.create({
   homeContainer: {
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: myColors.primaryColor,
-    paddingTop: Platform.OS === "ios" ? 48 : 24,
+    paddingTop: Platform.OS === "ios" ? 48 : 36,
     paddingBottom: 32,
     paddingHorizontal: 16,
   },
@@ -157,16 +159,10 @@ const styles = StyleSheet.create({
     color: myColors.secondaryColor,
     fontFamily: myFontFamilies.bold,
     marginHorizontal: 4,
+    marginTop: 4,
     marginBottom: 8,
   },
   flatList: {
-    width: "100%",
-  },
-  listItem: {
-    height: 80,
-    borderRadius: 8,
-    marginVertical: 8,
-    backgroundColor: myColors.lightGrayColor,
     width: "100%",
   },
   addButton: {
@@ -181,6 +177,7 @@ const styles = StyleSheet.create({
     shadowColor: myColors.darkGrayColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.6,
+    elevation: 4,
     justifyContent: "center",
     alignItems: "center",
   },
