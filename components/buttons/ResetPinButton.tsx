@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     backgroundColor: myColors.tertiaryColor,
   },
   buttonText: {
-    color: myColors.darkGrayColor,
+    color: myColors.darkColor,
     fontSize: myFontSizes.large,
     fontFamily: myFontFamilies.bold,
   },

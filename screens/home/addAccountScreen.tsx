@@ -1,9 +1,11 @@
 import {
-  Platform,
+  Keyboard,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -18,7 +20,9 @@ import {
 export default function AddAccountScreen({ navigation }: { navigation: any }) {
   const [accountIcon, setAccountIcon] = useState("at-circle-outline" as any);
   const [accountName, setAccountName] = useState("");
+  const [accountUserName, setAccountUserName] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
+  const [accountNotes, setAccountNotes] = useState("");
 
   const [deviceUser, setDeviceUser] = useState({
     username: "",
@@ -38,7 +42,7 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
 
   return (
     //Background Container
-    <View style={styles.homeContainer}>
+    <Pressable style={styles.homeContainer} onPress={Keyboard.dismiss}>
       {/* Main Container */}
       <View style={styles.mainContainer}>
         {/*Header*/}
@@ -56,42 +60,68 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
           <Ionicons
             name={accountIcon ?? "at-circle-outline"}
             size={64}
-            style={{ color: myColors.secondaryColor }}
+            style={{ color: myColors.darkColor }}
           />
         </View>
-        {/*Enter account name */}
+        <Text style={styles.addSubTitle}>
+          You can store username and password for an online account like Gmail,
+          Facebook!
+        </Text>
+        {/*Enter the account name */}
         <TextInput
           placeholder="Account name (ex: Gmail)"
+          value={accountName}
           onChangeText={(t) => {
             setAccountName(t);
             setAccountIcon(findIcon(t));
           }}
           style={styles.accountNameInput}
         />
+        {/*Save user name */}
+        <TextInput
+          placeholder="Username [Optional]"
+          value={accountUserName}
+          onChangeText={(t) => {
+            setAccountUserName(t);
+          }}
+          style={styles.accountNameInput}
+        />
         {/*Save password */}
         <TextInput
           placeholder="Password/PIN"
+          value={accountPassword}
           onChangeText={(t) => {
             setAccountPassword(t);
           }}
           style={styles.accountNameInput}
-          secureTextEntry={false}
+        />
+        {/*Save notes - optional */}
+        <TextInput
+          placeholder="Any notes (Optional)"
+          value={accountNotes}
+          multiline={true}
+          numberOfLines={3}
+          onChangeText={(t) => {
+            setAccountNotes(t);
+          }}
+          style={styles.accountNameInput}
         />
         <TouchableOpacity
           style={styles.addButton}
           onPress={async () => {
-            addAccountPasswordToDB(
+            await addAccountPasswordToDB(
               deviceUser.email,
               accountName,
-              accountPassword
-            );
-            navigation.navigate("HomeScreen");
+              accountUserName,
+              accountPassword,
+              accountNotes
+            ).then(() => navigation.navigate("HomeScreen"));
           }}
         >
           <Text style={styles.addButtonText}>ADD</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -108,7 +138,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     flex: 1,
-    backgroundColor: myColors.whiteColor,
+    backgroundColor: myColors.lightColor,
     paddingVertical: 8,
     paddingHorizontal: 32,
     borderTopLeftRadius: 32,
@@ -125,6 +155,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: myFontSizes.large,
     fontFamily: myFontFamilies.bold,
+    color: myColors.darkColor,
+  },
+  addSubTitle: {
+    width: "100%",
+    fontSize: myFontSizes.xs,
+    fontFamily: myFontFamilies.regular,
+    marginBottom: 8,
+    color: myColors.darkColor,
   },
   closeIcon: {
     color: myColors.redColor,
@@ -137,34 +175,36 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 4,
     borderColor: myColors.primaryColor,
-    marginVertical: 16,
+    marginVertical: 8,
   },
   accountNameInput: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    fontSize: myFontSizes.large,
+    paddingVertical: 8,
+    fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.regular,
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
     backgroundColor: myColors.lightGrayColor,
     width: "100%",
-    marginVertical: 16,
+    marginVertical: 8,
     borderRadius: 16,
   },
   addButton: {
-    paddingHorizontal: 32,
-    marginVertical: 16,
-    borderRadius: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginVertical: 8,
+    borderRadius: 32,
+    paddingVertical: 8,
     backgroundColor: myColors.primaryColor,
     shadowRadius: 4,
     shadowColor: myColors.lightGrayColor,
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.7,
     elevation: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   addButtonText: {
-    fontSize: myFontSizes.large,
+    fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.bold,
-    color: myColors.whiteColor,
+    color: myColors.lightColor,
   },
 });

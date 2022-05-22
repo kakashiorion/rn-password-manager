@@ -104,12 +104,12 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.whiteColor,
+    backgroundColor: myColors.lightColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
     justifyContent: "flex-start",
-    shadowColor: myColors.secondaryColor,
+    shadowColor: myColors.darkColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,

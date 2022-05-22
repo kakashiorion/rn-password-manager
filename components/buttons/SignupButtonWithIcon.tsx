@@ -44,6 +44,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     marginRight: 16,
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
   },
 });

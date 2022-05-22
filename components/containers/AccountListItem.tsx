@@ -6,23 +6,27 @@ import {
   StyleSheet,
   ToastAndroid,
 } from "react-native";
-import { myColors, myFontFamilies, myFontSizes } from "../../styles/global";
+import {
+  IconRevertDuration,
+  myColors,
+  myFontFamilies,
+  myFontSizes,
+} from "../../styles/global";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Clipboard from "expo-clipboard";
 import { findIcon } from "../../utils/methods";
 
-const IconRevertDuration = 2000;
-
 interface AccountListItemProps {
   accountName: string;
-  password: string;
+  accountUserName: string;
+  accountPassword: string;
 }
 export function AccountListItem(props: AccountListItemProps) {
   const [iconName, setIconName] = useState("copy" as any);
-  const [iconColor, setIconColor] = useState(myColors.whiteColor);
+  const [iconColor, setIconColor] = useState(myColors.lightColor);
 
   return (
-    <TouchableOpacity style={styles.accountListItemContainer}>
+    <View style={styles.accountListItemContainer}>
       <Ionicons
         name={(findIcon(props.accountName) as any) ?? "at-circle-outline"}
         size={32}
@@ -30,8 +34,15 @@ export function AccountListItem(props: AccountListItemProps) {
       />
       <View style={styles.accountInfoContainer}>
         <Text style={styles.accountNameText}>{props.accountName}</Text>
+        {props.accountUserName ? (
+          <Text style={styles.accountUserNameText}>
+            {props.accountUserName}
+          </Text>
+        ) : (
+          <></>
+        )}
         <Text style={styles.passwordText}>
-          {Array(props.password.length).fill("*")}
+          {Array(props.accountPassword.length).fill("*")}
         </Text>
       </View>
       <TouchableOpacity
@@ -39,7 +50,7 @@ export function AccountListItem(props: AccountListItemProps) {
           styles.copyButtonContainer,
           {
             backgroundColor:
-              iconName == "copy" ? myColors.darkGrayColor : myColors.whiteColor,
+              iconName == "copy" ? myColors.darkGrayColor : myColors.lightColor,
             borderColor:
               iconName == "copy"
                 ? myColors.darkGrayColor
@@ -51,15 +62,15 @@ export function AccountListItem(props: AccountListItemProps) {
           },
         ]}
         onPress={async () => {
-          await Clipboard.setStringAsync(props.password);
+          await Clipboard.setStringAsync(props.accountPassword);
           //Change to checkmark icon when clicked
           setIconName("checkmark-outline");
           setIconColor(myColors.primaryColor);
-          ToastAndroid.show("Copied password!", IconRevertDuration);
+          ToastAndroid.show("Copied!", IconRevertDuration);
           //Change back to copy icon after 2 seconds
           setTimeout(() => {
             setIconName("copy");
-            setIconColor(myColors.whiteColor);
+            setIconColor(myColors.lightColor);
           }, IconRevertDuration);
         }}
       >
@@ -69,14 +80,14 @@ export function AccountListItem(props: AccountListItemProps) {
           style={{ color: iconColor }}
         />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   accountListItemContainer: {
     borderRadius: 8,
-    marginVertical: 8,
+    marginVertical: 4,
     backgroundColor: myColors.lightGrayColor,
     width: "100%",
     flexDirection: "row",
@@ -92,30 +103,35 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "flex-start",
     flex: 1,
-    margin: 4,
+    marginHorizontal: 4,
   },
   accountNameText: {
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.bold,
     color: myColors.primaryColor,
   },
+  accountUserNameText: {
+    fontSize: myFontSizes.small,
+    fontFamily: myFontFamilies.regular,
+    color: myColors.darkColor,
+  },
   passwordText: {
     fontSize: myFontSizes.small,
     fontFamily: myFontFamilies.regular,
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
   },
   copyButtonContainer: {
     height: 40,
     width: 40,
+    marginHorizontal: 4,
     borderWidth: 1,
-    // backgroundColor: myColors.darkGrayColor,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    shadowRadius: 1,
+    shadowRadius: 2,
     shadowColor: myColors.darkGrayColor,
-    shadowOffset: { width: 1, height: 1 },
+    shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.5,
-    elevation: 1,
+    elevation: 2,
   },
 });

@@ -7,8 +7,10 @@ import {
   updateDoc,
   getDocs,
   collection,
+  deleteDoc,
 } from "firebase/firestore";
 import { myLogos } from "../styles/global";
+import * as ImagePicker from "expo-image-picker";
 
 export const getLocalData = async (key: string) => {
   const value = await AsyncStorage.getItem(key);
@@ -29,14 +31,23 @@ export function createUserWithEmail(email: string, username: string) {
 export function addAccountPasswordToDB(
   email: string,
   accountName: string,
-  accountPassword: string
+  accountUserName: string,
+  accountPassword: string,
+  accountNotes: string
 ) {
   const myDocument = doc(db, `PMCollection/${email}/passwords`, accountName);
   const data = {
     accountName: accountName,
-    password: accountPassword,
+    accountUserName: accountUserName,
+    accountPassword: accountPassword,
+    accountNotes: accountNotes,
   };
-  setDoc(myDocument, data, { merge: true });
+  return setDoc(myDocument, data, { merge: true });
+}
+
+export function deleteAccountFromDB(email: string, accountName: string) {
+  const myDocument = doc(db, `PMCollection/${email}/passwords`, accountName);
+  deleteDoc(myDocument);
 }
 
 export async function getAllAccountPasswordsFromDB(email: string) {
@@ -73,4 +84,17 @@ export function findIcon(t: string) {
       return myLogos[item as keyof typeof myLogos];
     }
   }
+}
+
+export async function openImagePickerAsync() {
+  const permissionResult =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (permissionResult.granted === false) {
+    alert("Permission to access camera roll is required!");
+    return;
+  }
+
+  const pickerResult = await ImagePicker.launchImageLibraryAsync();
+  return pickerResult;
 }

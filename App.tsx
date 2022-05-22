@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import SetPinScreen from "./screens/setPinScreen";
 import RetrievePinScreen from "./screens/retrievePinScreen";
 import ResetPinScreen from "./screens/resetPinScreen";
+import * as SplashScreen from "expo-splash-screen";
 
 const LoginStack = createNativeStackNavigator();
 const SignupStack = createNativeStackNavigator();
@@ -22,6 +23,10 @@ export default function App() {
   const [userExists, setUserExists] = useState(false);
 
   useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+    setTimeout(async () => {
+      await SplashScreen.hideAsync();
+    }, 1000);
     getLocalData("user").then((data) => {
       if (data) {
         setUserExists(true);

@@ -19,7 +19,6 @@ const logoUrl = "PMLogo.png";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [pinTextValue, setPinTextValue] = useState("");
-  const [fingerAllowed, setFingerAllowed] = useState(false);
   // const [forgotPin, setForgotPin] = useState(false);
   const [deviceUser, setDeviceUser] = useState({
     username: "",
@@ -27,11 +26,15 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     pin: "",
   });
   // const [email, setEmail] = useState("");
+  const [deviceSettings, setDeviceSettings] = useState({
+    fingerprint: false,
+    imageURL: "../../assets/avatar.jpg",
+  });
 
   const authenticateFingerprint = async () => {
     const supportedAuths =
       await LocalAuthentication.supportedAuthenticationTypesAsync();
-    if (supportedAuths.includes(1)) {
+    if (supportedAuths.includes(1) && deviceSettings.fingerprint) {
       const result = await LocalAuthentication.authenticateAsync();
       if (result.success) {
         navigation.navigate("Main", {
@@ -42,19 +45,17 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
     }
   };
   useEffect(() => {
-    (async () => {
-      await getLocalData("user").then((data) => {
-        if (data) {
-          setDeviceUser(JSON.parse(data));
-        }
-      });
-      await authenticateFingerprint();
-      const result =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
-      if (result.includes(1)) {
-        setFingerAllowed(true);
+    getLocalData("user").then((data) => {
+      if (data) {
+        setDeviceUser(JSON.parse(data));
       }
-    })();
+    });
+    getLocalData("settings").then((data) => {
+      if (data) {
+        setDeviceSettings(JSON.parse(data));
+      }
+    });
+    authenticateFingerprint();
   }, []);
 
   const handleInput = (value: string) => {
@@ -84,7 +85,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
       source={require(`../assets/${bgImageUrl}`)}
       style={styles.bgImage}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.mainContainer}>
           <View style={styles.upperRightCircle}></View>
           <View style={styles.lowerRightCircle}></View>
@@ -102,7 +103,6 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
           <TextInput
             style={styles.pinInput}
-            placeholder="0000"
             keyboardType="numeric"
             value={pinTextValue}
             onChangeText={handleInput}
@@ -120,7 +120,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             Forgot your pin?
           </Text>
           {/* ) : null} */}
-          {fingerAllowed ? (
+          {deviceSettings.fingerprint ? (
             <>
               <Text style={[styles.headerText, styles.orText]}>OR</Text>
               <Text style={[styles.fpText]} onPress={authenticateFingerprint}>
@@ -146,12 +146,12 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.whiteColor,
+    backgroundColor: myColors.lightColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
     justifyContent: "flex-start",
-    shadowColor: myColors.secondaryColor,
+    shadowColor: myColors.darkColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.8,
     shadowRadius: 8,
@@ -196,12 +196,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     margin: 16,
     fontFamily: myFontFamilies.bold,
+    color: myColors.darkColor,
   },
   headerText: {
     fontSize: myFontSizes.large,
     textAlign: "center",
     marginTop: 8,
     fontFamily: myFontFamilies.bold,
+    color: myColors.darkColor,
   },
   forgotText: {
     fontSize: myFontSizes.xs,
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
   pinInput: {
     fontSize: myFontSizes.xl,
     borderRadius: 8,
-    borderColor: myColors.secondaryColor,
+    borderColor: myColors.darkColor,
     borderWidth: 2,
     padding: 8,
     marginVertical: 16,
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
     fontFamily: myFontFamilies.bold,
     textAlign: "center",
     width: 128,
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
   },
   orText: {
     fontSize: myFontSizes.regular,
@@ -234,5 +236,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: myFontFamilies.regular,
     textDecorationLine: "underline",
+    color: myColors.darkColor,
   },
 });

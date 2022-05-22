@@ -44,12 +44,12 @@ export default function MainScreen({
           //   paddingBottom: Platform.OS === "ios" ? 0 : 8,
           // },
           tabBarStyle: {
-            backgroundColor: myColors.tertiaryColor,
+            backgroundColor: myColors.lightGrayColor,
             opacity: 0.8,
             height: Platform.OS === "ios" ? 84 : 64,
           },
           tabBarActiveTintColor: myColors.primaryColor,
-          tabBarInactiveTintColor: myColors.darkGrayColor,
+          tabBarInactiveTintColor: myColors.darkColor,
         })}
       >
         <BottomTab.Screen

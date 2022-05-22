@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   startText: {
-    color: myColors.secondaryColor,
+    color: myColors.darkColor,
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.bold,
     marginRight: 24,
