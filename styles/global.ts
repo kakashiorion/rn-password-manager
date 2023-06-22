@@ -1,20 +1,24 @@
+import { DocumentData } from "firebase/firestore";
 import { Appearance } from "react-native";
 
 export const IconRevertDuration = 2000;
 
 const colorScheme = Appearance.getColorScheme();
 export const myColors = {
-  primaryColor: "#58A4B0",
-  darkColor: colorScheme == "dark" ? "#F9F8F8" : "#1B1B1E",
-  lightColor: colorScheme == "dark" ? "#1B1B1E" : "#F9F8F8",
-  tertiaryColor: colorScheme == "dark" ? "#373F51" : "#F3DE8A",
-  lightGrayColor: colorScheme == "dark" ? "#373F51" : "#D8DBE2",
-  darkGrayColor: colorScheme == "dark" ? "#D8DBE2" : "#373F51",
-  redColor: "#FB3640",
-  pureWhiteColor: "#FFFFFF",
-  pureBlackColor: "#000000",
+  primaryColor: "#407E87",
+  tintPrimaryColor: colorScheme=="dark"? "#93BACC":"#345C6F",
+  shadePrimaryColor: colorScheme=="dark"? "#345C6F":"#93BACC",
+  secondaryColor:  "#8E7510",
+  tintSecondaryColor: colorScheme == "dark" ?  "#F3DE8A":"#6A570C",
+  shadeSecondaryColor: colorScheme == "dark" ?  "#6A570C":"#F3DE8A",
+  textColor: colorScheme == "dark" ? "#F8F8F8" : "#1B1B1B",
+  tintTextColor: colorScheme == "dark" ? "#D8DBE2" : "#313649",
+  backgroundColor: colorScheme == "dark" ? "#1B1B1B" : "#F8F8F8",
+  tintBackgroundColor: colorScheme == "dark" ? "#313649" : "#D8DBE2",
+  redColor: "#EB0510",
+  greenColor: "#47A94D",
 };
-const random = "c98af3";
+
 export const myFontFamilies = {
   regular: "NotoRegular",
   bold: "NotoBold",
@@ -28,6 +32,7 @@ export const myFontSizes = {
   large: 20,
   xl: 24,
   xxl: 32,
+  xxxl: 40,
 };
 
 export const myLogos = {
@@ -48,9 +53,10 @@ export const myLogos = {
   instagram: "logo-instagram",
   javascript: "logo-javascript",
   linkedin: "logo-linkedin",
-  microsoft: "logo-windows",
+  microsoft: "logo-microsoft",
   pinterest: "logo-pinterest",
   playstation: "logo-playstation",
+  paypal: "logo-paypal",
   reddit: "logo-reddit",
   skype: "logo-skype",
   slack: "logo-slack",
@@ -69,3 +75,33 @@ export const myLogos = {
   yahoo: "logo-yahoo",
   youtube: "logo-youtube",
 };
+
+export type RootStackParamList={
+  Onboarding:undefined,
+  Login:undefined,
+  Signup:undefined,
+  Home:undefined,
+  ResetPin:{
+    username:string,
+    email:string,
+    code:string
+  },
+  SetPin:{
+    username:string,
+    email:string,
+  },
+  RetrievePin:{
+    username:string,
+  },
+}
+
+export type HomeStackParamList ={
+  Home:undefined,
+  Settings:undefined,
+  AddAccount:undefined,
+  ViewAccount:{
+    account:DocumentData,
+    email:string,
+  },
+}
+

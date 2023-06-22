@@ -1,16 +1,16 @@
 import LoginScreen from "./screens/loginScreen";
-import MainScreen from "./screens/mainScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
-import { getLocalData } from "./utils/methods";
+import { UserContext, emptyUser, getLocalData } from "./utils/methods";
 import OnboardingScreen from "./screens/onboardingScreen";
 import SignupScreen from "./screens/signupScreen";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SetPinScreen from "./screens/setPinScreen";
 import RetrievePinScreen from "./screens/retrievePinScreen";
 import ResetPinScreen from "./screens/resetPinScreen";
 import * as SplashScreen from "expo-splash-screen";
+import HomeScreenStack from "./screens/home/homeScreenStack";
 
 const LoginStack = createNativeStackNavigator();
 const SignupStack = createNativeStackNavigator();
@@ -20,26 +20,32 @@ export default function App() {
     NotoRegular: require("./assets/NotoSans-Regular.ttf"),
     NotoBold: require("./assets/NotoSans-Bold.ttf"),
   });
-  const [userExists, setUserExists] = useState(false);
+  
+  const [deviceUser, setDeviceUser] = useState(emptyUser);
+
+  const fetchData = useCallback(async ()=>{
+    await getLocalData("user").then((data) => {
+      if (data) {
+        setDeviceUser(JSON.parse(data));
+      }
+    });
+  },[])
 
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
     setTimeout(async () => {
       await SplashScreen.hideAsync();
     }, 1000);
-    getLocalData("user").then((data) => {
-      if (data) {
-        setUserExists(true);
-      }
-    });
-  }, []);
+    fetchData();
+  }, [deviceUser]);
 
   if (!loaded) {
     return null;
   }
   return (
+    <UserContext.Provider value={deviceUser}>
     <NavigationContainer>
-      {userExists ? (
+      {deviceUser.email!="" ? (
         <LoginStack.Navigator initialRouteName="Login">
           <LoginStack.Screen
             name="Login"
@@ -49,8 +55,8 @@ export default function App() {
             }}
           />
           <LoginStack.Screen
-            name="Main"
-            component={MainScreen}
+            name="Home"
+            component={HomeScreenStack}
             options={{
               headerShown: false,
             }}
@@ -94,6 +100,13 @@ export default function App() {
             }}
           />
           <SignupStack.Screen
+            name="ResetPin"
+            component={ResetPinScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <SignupStack.Screen
             name="SetPin"
             component={SetPinScreen}
             options={{
@@ -101,8 +114,8 @@ export default function App() {
             }}
           />
           <SignupStack.Screen
-            name="Main"
-            component={MainScreen}
+            name="Home"
+            component={HomeScreenStack}
             options={{
               headerShown: false,
             }}
@@ -110,5 +123,7 @@ export default function App() {
         </SignupStack.Navigator>
       )}
     </NavigationContainer>
+    </UserContext.Provider>
+
   );
 }

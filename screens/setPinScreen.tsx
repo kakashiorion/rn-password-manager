@@ -10,21 +10,21 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { RouteProp } from "@react-navigation/native";
-import { createUserWithEmail } from "../utils/methods";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useRoute } from "@react-navigation/native";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
 
 export default function SetPinScreen({
-  route,
   navigation,
-}: {
-  route: RouteProp<{ params: { username: string; email: string } }, "params">;
-  navigation: any;
+}:{
+  navigation:NativeStackScreenProps<RootStackParamList, 'SetPin'>['navigation']
 }) {
+
+  const route = useRoute<NativeStackScreenProps<RootStackParamList, 'SetPin'>['route']>()
   const [firstPin, setFirstPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
 
@@ -43,11 +43,12 @@ export default function SetPinScreen({
           ></Image>
           <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
-            Great! Set a new pin which you can use to login from now on!
+            Let's set a 4-digit pin which you can use to login!
           </Text>
           <TextInput
             style={styles.pinInput}
             placeholder="Set PIN"
+            placeholderTextColor={myColors.tintSecondaryColor}
             value={firstPin}
             keyboardType="numeric"
             maxLength={4}
@@ -55,7 +56,8 @@ export default function SetPinScreen({
           />
           <TextInput
             style={styles.pinInput}
-            placeholder="Re-enter PIN"
+            placeholder="Confirm PIN"
+            placeholderTextColor={myColors.tintSecondaryColor}
             value={confirmPin}
             keyboardType="numeric"
             maxLength={4}
@@ -64,7 +66,7 @@ export default function SetPinScreen({
               setConfirmPin(t);
               if (t.length > 3) {
                 if (t == firstPin) {
-                  Alert.alert(" PIN set successfully!");
+                  //PINs matched.. update in local storage
                   AsyncStorage.setItem(
                     "user",
                     JSON.stringify({
@@ -73,16 +75,10 @@ export default function SetPinScreen({
                       pin: t,
                     })
                   );
-                  navigation.navigate("Main", {
-                    username: route.params.username,
-                    email: route.params.email,
-                  });
-                  createUserWithEmail(
-                    route.params.email,
-                    route.params.username
-                  );
+                  navigation.replace("Home");
                 } else {
-                  Alert.alert("PIN does not match");
+                  //PINs do not match
+                  Alert.alert("PINs do not match.. Please try again");
                   setConfirmPin("");
                 }
               }
@@ -100,16 +96,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     paddingHorizontal: 32,
-    paddingVertical: 64,
+    paddingVertical: 128,
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.lightColor,
+    height: "100%",
+    backgroundColor: myColors.backgroundColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: myColors.darkColor,
+    justifyContent: "space-around",
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -117,7 +114,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   upperLeftCircle: {
-    backgroundColor: myColors.primaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 200,
     height: 200,
@@ -127,18 +124,18 @@ const styles = StyleSheet.create({
     left: -80,
   },
   lowerRightCircle: {
-    backgroundColor: myColors.primaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 100,
     height: 100,
     borderRadius: 50,
     position: "absolute",
     bottom: -70,
-    right: 50,
+    right: 20,
   },
   logoImage: {
     width: "100%",
-    height: "10%",
+    height: "15%",
     resizeMode: "contain",
   },
   titleText: {
@@ -146,7 +143,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,
@@ -154,18 +151,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     fontSize: myFontSizes.small,
     textAlign: "center",
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   pinInput: {
     fontSize: myFontSizes.large,
-    marginBottom: 32,
+    marginBottom: 16,
     borderRadius: 4,
-    backgroundColor: myColors.lightGrayColor,
+    backgroundColor: myColors.tintBackgroundColor,
     padding: 12,
     fontFamily: myFontFamilies.bold,
     textAlign: "center",
     width: "70%",
-    color: myColors.primaryColor,
+    color: myColors.textColor,
     letterSpacing: 2,
   },
 });

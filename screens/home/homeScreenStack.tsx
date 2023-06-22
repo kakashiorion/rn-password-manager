@@ -4,10 +4,11 @@ import AddAccountScreen from "./addAccountScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ViewAccountScreen from "./viewAccountScreen";
 import HomeScreen from "./homeScreen";
+import SettingsScreen from "./settingsScreen";
 
 const HomeStack = createNativeStackNavigator();
 
-export default function HomeScreenStack({ navigation }: { navigation: any }) {
+export default function HomeScreenStack() {
   return (
     <HomeStack.Navigator initialRouteName="HomeScreen">
       <HomeStack.Screen
@@ -29,6 +30,14 @@ export default function HomeScreenStack({ navigation }: { navigation: any }) {
       <HomeStack.Screen
         name="ViewAccount"
         component={ViewAccountScreen}
+        options={{
+          headerShown: false,
+          animation: "slide_from_right",
+        }}
+      />
+      <HomeStack.Screen
+        name="Settings"
+        component={SettingsScreen}
         options={{
           headerShown: false,
           animation: "slide_from_right",

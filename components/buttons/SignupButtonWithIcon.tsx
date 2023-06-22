@@ -33,17 +33,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    borderColor: myColors.primaryColor,
+    borderColor: myColors.secondaryColor,
     borderWidth: 2,
     margin: 8,
   },
   buttonText: {
-    color: myColors.primaryColor,
+    color: myColors.secondaryColor,
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.regular,
   },
   logo: {
     marginRight: 16,
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
 });

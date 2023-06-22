@@ -15,13 +15,19 @@ export default function SignupButton(props: SignupButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 4,
+    borderRadius: 8,
     paddingHorizontal: 32,
+    textAlign:"center",
     paddingVertical: 12,
-    backgroundColor: myColors.primaryColor,
+    backgroundColor: myColors.secondaryColor,
+    shadowColor: myColors.tintBackgroundColor,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   buttonText: {
-    color: myColors.lightColor,
+    color: myColors.backgroundColor,
     fontSize: myFontSizes.large,
     fontFamily: myFontFamilies.bold,
   },

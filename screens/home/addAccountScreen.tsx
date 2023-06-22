@@ -1,6 +1,6 @@
 import {
+  Alert,
   Keyboard,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -8,43 +8,34 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { myColors, myFontFamilies, myFontSizes } from "../../styles/global";
+import React, { useContext, useState } from "react";
+import { HomeStackParamList, myColors, myFontFamilies, myFontSizes, myLogos } from "../../styles/global";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
+  UserContext,
   addAccountPasswordToDB,
   findIcon,
   getLocalData,
 } from "../../utils/methods";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNetInfo } from "@react-native-community/netinfo";
 
-export default function AddAccountScreen({ navigation }: { navigation: any }) {
+export default function AddAccountScreen({ navigation }: { navigation: NativeStackScreenProps<HomeStackParamList, 'AddAccount'>['navigation'] }) {
   const [accountIcon, setAccountIcon] = useState("at-circle-outline" as any);
   const [accountName, setAccountName] = useState("");
   const [accountUserName, setAccountUserName] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
   const [accountNotes, setAccountNotes] = useState("");
 
-  const [deviceUser, setDeviceUser] = useState({
-    username: "",
-    email: "",
-    pin: "",
-  });
-
-  useEffect(() => {
-    (async () => {
-      await getLocalData("user").then((data) => {
-        if (data) {
-          setDeviceUser(JSON.parse(data));
-        }
-      });
-    })();
-  }, []);
+  const deviceUser = useContext(UserContext);
+  const netInfo = useNetInfo()
 
   return (
     //Background Container
-    <Pressable style={styles.homeContainer} onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       {/* Main Container */}
-      <View style={styles.mainContainer}>
+      <View style={styles.homeContainer}>
         {/*Header*/}
         <View style={styles.addHeader}>
           <Text style={styles.addTitle}>Add a new account</Text>
@@ -52,24 +43,25 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
             name="close-outline"
             size={32}
             style={styles.closeIcon}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.pop()}
           />
         </View>
+        <Text style={styles.addSubTitle}>
+          You can store username, password or any other details for an online account like Gmail,
+          Facebook or Netflix!
+        </Text>
         {/* Account Icon */}
         <View style={styles.iconContainer}>
           <Ionicons
             name={accountIcon ?? "at-circle-outline"}
             size={64}
-            style={{ color: myColors.darkColor }}
+            style={{ color: myColors.textColor }}
           />
         </View>
-        <Text style={styles.addSubTitle}>
-          You can store username and password for an online account like Gmail,
-          Facebook!
-        </Text>
         {/*Enter the account name */}
         <TextInput
-          placeholder="Account name (ex: Gmail)"
+          placeholder="Account (ex: Google)"
+          placeholderTextColor={myColors.tintPrimaryColor}
           value={accountName}
           onChangeText={(t) => {
             setAccountName(t);
@@ -79,7 +71,8 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
         />
         {/*Save user name */}
         <TextInput
-          placeholder="Username [Optional]"
+          placeholder="User/Account ID"
+          placeholderTextColor={myColors.tintPrimaryColor}
           value={accountUserName}
           onChangeText={(t) => {
             setAccountUserName(t);
@@ -88,7 +81,8 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
         />
         {/*Save password */}
         <TextInput
-          placeholder="Password/PIN"
+          placeholder="Password/PIN/Number"
+          placeholderTextColor={myColors.tintPrimaryColor}
           value={accountPassword}
           onChangeText={(t) => {
             setAccountPassword(t);
@@ -97,75 +91,93 @@ export default function AddAccountScreen({ navigation }: { navigation: any }) {
         />
         {/*Save notes - optional */}
         <TextInput
-          placeholder="Any notes (Optional)"
+          placeholder="Any notes/details (Optional)"
+          placeholderTextColor={myColors.tintPrimaryColor}
           value={accountNotes}
           multiline={true}
           numberOfLines={3}
           onChangeText={(t) => {
             setAccountNotes(t);
           }}
-          style={styles.accountNameInput}
+          style={styles.multipleInput}
         />
         <TouchableOpacity
           style={styles.addButton}
           onPress={async () => {
-            await addAccountPasswordToDB(
-              deviceUser.email,
-              accountName,
-              accountUserName,
-              accountPassword,
-              accountNotes
-            ).then(() => navigation.navigate("HomeScreen"));
+            if (netInfo.isConnected){
+              if (accountName!="" && accountUserName!="" && accountPassword!=""){
+                //Create data to be added
+                const accountTime = Date.now().toString();
+                const data = {
+                  accountName: accountName,
+                  accountUserName: accountUserName,
+                  accountPassword: accountPassword,
+                  accountNotes: accountNotes,
+                  accountTime:accountTime,
+                }
+                //Add account to local storage
+                const accounts:string[] = JSON.parse(await getLocalData("accounts")??"[]")
+                AsyncStorage.setItem("accounts",JSON.stringify([...accounts,accountTime]))
+                AsyncStorage.setItem(accountTime,JSON.stringify(data))
+                //Add account to DB
+                await addAccountPasswordToDB(
+                  deviceUser.email,
+                  accountTime,
+                  accountName,
+                  accountUserName,
+                  accountPassword,
+                  accountNotes
+                )
+                //Go to home screen
+                navigation.replace("Home");
+              } else {
+                Alert.alert("Please provide required fields")
+              }
+            } else {
+              //No internet
+              Alert.alert("You are not connected to the internet")
+            }
           }}
         >
-          <Text style={styles.addButtonText}>ADD</Text>
+          <Text style={styles.addButtonText}>SAVE</Text>
         </TouchableOpacity>
       </View>
-    </Pressable>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   homeContainer: {
     flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    backgroundColor: myColors.primaryColor,
-    paddingTop: 48,
-  },
-  mainContainer: {
     justifyContent: "flex-start",
     alignItems: "center",
-    width: "100%",
-    flex: 1,
-    backgroundColor: myColors.lightColor,
-    paddingVertical: 8,
-    paddingHorizontal: 32,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    backgroundColor: myColors.shadePrimaryColor,
+    paddingTop: 64,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
   },
   addHeader: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 16,
+    marginBottom: 8,
   },
   addTitle: {
     flex: 1,
-    fontSize: myFontSizes.large,
+    fontSize: myFontSizes.xl,
     fontFamily: myFontFamilies.bold,
-    color: myColors.darkColor,
+    color: myColors.textColor,
+  },
+  closeIcon: {
+    color: myColors.tintTextColor,
   },
   addSubTitle: {
     width: "100%",
-    fontSize: myFontSizes.xs,
+    fontSize: myFontSizes.small,
     fontFamily: myFontFamilies.regular,
-    marginBottom: 8,
-    color: myColors.darkColor,
-  },
-  closeIcon: {
-    color: myColors.redColor,
+    marginVertical: 16,
+    color: myColors.tintTextColor,
   },
   iconContainer: {
     height: 100,
@@ -173,31 +185,43 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 50,
-    borderWidth: 4,
-    borderColor: myColors.primaryColor,
-    marginVertical: 8,
+    backgroundColor: myColors.backgroundColor,
+    marginVertical: 16,
   },
   accountNameInput: {
     paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingVertical: 16,
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.regular,
-    color: myColors.darkColor,
-    backgroundColor: myColors.lightGrayColor,
+    color: myColors.textColor,
+    backgroundColor: myColors.tintBackgroundColor,
     width: "100%",
-    marginVertical: 8,
-    borderRadius: 16,
+    marginVertical: 16,
+    borderRadius: 8,
+  },
+  multipleInput: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    fontSize: myFontSizes.regular,
+    fontFamily: myFontFamilies.regular,
+    color: myColors.textColor,
+    backgroundColor: myColors.tintBackgroundColor,
+    width: "100%",
+    height: 96,
+    marginVertical: 16,
+    borderRadius: 8,
   },
   addButton: {
-    paddingHorizontal: 24,
-    marginVertical: 8,
-    borderRadius: 32,
-    paddingVertical: 8,
-    backgroundColor: myColors.primaryColor,
+    borderRadius: 8,
+    paddingHorizontal: 32,
+    textAlign:"center",
+    paddingVertical: 12,
+    marginVertical: 16,
+    backgroundColor: myColors.tintPrimaryColor,
+    shadowColor: myColors.tintBackgroundColor,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 4,
-    shadowColor: myColors.lightGrayColor,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.7,
     elevation: 4,
     justifyContent: "center",
     alignItems: "center",
@@ -205,6 +229,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.bold,
-    color: myColors.lightColor,
+    color: myColors.backgroundColor,
   },
 });

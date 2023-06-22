@@ -1,87 +1,75 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useContext, useState } from "react";
 import {
   FlatList,
   TextInput,
   View,
   Image,
   Text,
-  Platform,
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from "react-native";
 import { AccountListItem } from "../../components/containers/AccountListItem";
-import { myColors, myFontFamilies, myFontSizes } from "../../styles/global";
+import { HomeStackParamList, myColors, myFontFamilies, myFontSizes } from "../../styles/global";
 import {
+  UserContext,
   getAllAccountPasswordsFromDB,
   getLocalData,
 } from "../../utils/methods";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { DocumentData } from "firebase/firestore";
-import { useFocusEffect } from "@react-navigation/native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useNetInfo } from "@react-native-community/netinfo";
 
-export default function HomeScreen({ navigation }: { navigation: any }) {
-  const [deviceUser, setDeviceUser] = useState({
-    username: "",
-    email: "",
-    pin: "",
-  });
-
-  const [deviceSettings, setDeviceSettings] = useState({
-    fingerprint: false,
-    imageURL: "../../assets/avatar.jpg",
-  });
-
+export default function HomeScreen({ navigation }: { navigation: NativeStackScreenProps<HomeStackParamList, 'Home'>['navigation'] }) {
+  
+  const deviceUser = useContext(UserContext);
   const [accounts, setAccounts] = useState([] as DocumentData[]);
   const [filteredAccounts, setFilteredAccounts] = useState(
     [] as DocumentData[]
   );
+  const netInfo = useNetInfo()
 
-  useFocusEffect(
-    React.useCallback(() => {
-      getLocalData("user")
-        .then((data) => {
-          if (data) {
-            const userData = JSON.parse(data);
-            setDeviceUser(userData);
-            return userData;
-          }
-        })
-        .then(async (data) => {
-          const dataFromDB = await getAllAccountPasswordsFromDB(data.email);
-          let dataArray: DocumentData[] = [];
-          dataFromDB.forEach((item) => dataArray.push(item.data()));
-          setAccounts(dataArray);
-          setFilteredAccounts(dataArray);
-        });
-      getLocalData("settings").then((data) => {
-        if (data) {
-          setDeviceSettings(JSON.parse(data));
-        }
-      });
-    }, [])
-  );
+  const getUserAccounts = useCallback(async (connected:boolean|null)=>{
+    let dataArray: DocumentData[] = [];
+    if (connected){
+      //Connected.. get accounts from DB
+      const dataFromDB = await getAllAccountPasswordsFromDB(deviceUser.email);
+      dataFromDB.forEach((item) => dataArray.push(item.data()));
+    } else {
+      //Not connected.. get accounts from local storage
+      const localData:string[] = JSON.parse(await getLocalData("accounts")??"[]")
+      if(localData.length > 0) {
+        localData.forEach(async (item:string)=>dataArray.push(JSON.parse(await getLocalData(item)??"")))
+      }
+    }
+    setAccounts(dataArray);
+    setFilteredAccounts(dataArray);
+  },[])
+
+  useEffect(()=>{
+    getUserAccounts(netInfo.isConnected)
+  },[netInfo]);
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.homeContainer}>
-        <View style={styles.upperLeftCircle}></View>
-        <View style={styles.lowerRightCircle}></View>
-        {/* Welcome header */}
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeText}>Hi {deviceUser.username}!</Text>
-          <Image
-            source={{
-              uri: deviceSettings.imageURL,
-            }}
-            style={styles.profilePicContainer}
-          />
+        <View  style={styles.headerContainer}>
+          <Text style={styles.welcomeText}>Hi {deviceUser.username}</Text>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.push("Settings")}
+          >
+            <Ionicons name="settings" size={32} style={styles.settingsIcon} />
+          </TouchableOpacity>
         </View>
-        {/* Search bar */}
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInputText}
             placeholder="Search"
+            placeholderTextColor={myColors.tintTextColor}
             onChangeText={(t) => {
               setFilteredAccounts(
                 accounts.filter(
@@ -94,8 +82,8 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           />
           <Ionicons name="search" size={20} style={styles.searchIcon} />
         </View>
-        <Text style={styles.listTitle}>Your saved passwords</Text>
-        {/* List of passwords */}
+        <Text style={styles.listTitle}>Your saved accounts</Text>
+        {/* List of accounts */}
         <View style={styles.listContainer}>
           <FlatList
             ListEmptyComponent={
@@ -105,14 +93,14 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                   style={styles.emptyImage}
                 />
                 <Text style={styles.emptyText}>
-                  No passwords saved yet.. Start now!
+                  No accounts found.. Start adding now!
                 </Text>
               </View>
             }
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate("ViewAccount", {
+                  navigation.push("ViewAccount", {
                     account: item,
                     email: deviceUser.email,
                   })
@@ -132,7 +120,9 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         {/* Add Account Button*/}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate("AddAccount")}
+          onPress={() => {
+            navigation.push("AddAccount")
+          }}
         >
           <Ionicons name="add" size={32} style={styles.addIcon} />
         </TouchableOpacity>
@@ -146,103 +136,80 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: myColors.primaryColor,
-    paddingTop: Platform.OS === "ios" ? 32 : 24,
+    backgroundColor: myColors.shadePrimaryColor,
+    paddingTop: 64,
     paddingBottom: 32,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
   },
-  welcomeContainer: {
+  headerContainer:{
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    width: "100%",
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  upperLeftCircle: {
-    backgroundColor: myColors.tertiaryColor,
-    opacity: 0.7,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    position: "absolute",
-    top: 100,
-    left: -150,
-  },
-  lowerRightCircle: {
-    backgroundColor: myColors.tertiaryColor,
-    opacity: 0.7,
-    width: 200,
-    height: 200,
-    borderRadius: 150,
-    position: "absolute",
-    bottom: -110,
-    right: -50,
   },
   welcomeText: {
     fontFamily: myFontFamilies.bold,
-    color: myColors.lightColor,
+    color: myColors.textColor,
     fontSize: myFontSizes.xl,
-  },
-  profilePicContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: myColors.tertiaryColor,
-    borderRadius: 24,
+    flex:1,
+    marginBottom:8,
   },
   searchContainer: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    backgroundColor: myColors.lightGrayColor,
-    borderRadius: 32,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: myColors.backgroundColor,
+    borderRadius: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 8,
+    marginVertical: 16,
   },
   searchIcon: {
-    color: myColors.primaryColor,
+    color: myColors.tintPrimaryColor,
   },
   searchInputText: {
     fontFamily: myFontFamilies.regular,
     fontSize: myFontSizes.regular,
     flex: 1,
     marginRight: 8,
-    color: myColors.darkGrayColor,
-  },
-  listContainer: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: myColors.lightColor,
-    borderRadius: 16,
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
-    marginVertical: 8,
+    color: myColors.tintPrimaryColor,
   },
   listTitle: {
     fontSize: myFontSizes.regular,
-    color: myColors.lightColor,
+    color: myColors.tintTextColor,
     fontFamily: myFontFamilies.bold,
     marginHorizontal: 4,
+    marginVertical:4,
     alignSelf: "flex-start",
+  },
+  listContainer: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: myColors.tintBackgroundColor,
+    borderRadius: 8,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+    marginTop: 8,
+    marginBottom: 24,
   },
   emptyContainer: {
     justifyContent: "center",
     alignItems: "center",
+    height:"100%"
   },
   emptyImage: {
     resizeMode: "contain",
     width: "80%",
-    height: 256,
+    height: 172,
   },
   emptyText: {
     fontSize: myFontSizes.regular,
-    color: myColors.darkColor,
+    color: myColors.tintTextColor,
     fontFamily: myFontFamilies.regular,
     flex: 1,
     textAlign: "center",
+    marginTop: 16,
     marginHorizontal: 64,
   },
   flatList: {
@@ -252,19 +219,28 @@ const styles = StyleSheet.create({
     height: 64,
     width: 64,
     borderRadius: 64,
-    backgroundColor: myColors.darkColor,
+    backgroundColor: myColors.textColor,
     position: "absolute",
-    // right: 16,
-    bottom: 8,
+    bottom: 24,
     shadowRadius: 1,
-    shadowColor: myColors.lightGrayColor,
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.6,
-    elevation: 1,
+    shadowOpacity: 0.2,
+    elevation: 2,
     justifyContent: "center",
     alignItems: "center",
   },
   addIcon: {
-    color: myColors.tertiaryColor,
+    color: myColors.backgroundColor,
+  },
+  settingsButton:{
+    height: 32,
+    width: 32,
+    borderRadius: 32,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  settingsIcon: {
+    color: myColors.tintTextColor,
   },
 });

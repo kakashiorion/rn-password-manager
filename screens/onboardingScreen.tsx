@@ -1,9 +1,11 @@
 import { StyleSheet, Image, Text } from "react-native";
 import React from "react";
 import Onboarding from "react-native-onboarding-swiper";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-export default function OnboardingScreen({ navigation }: { navigation: any }) {
+export default function OnboardingScreen({ navigation }: { navigation: NativeStackScreenProps<RootStackParamList, 'Onboarding'>['navigation']
+}) {
   return (
     <Onboarding
       pages={[
@@ -29,7 +31,7 @@ export default function OnboardingScreen({ navigation }: { navigation: any }) {
           ),
           title: "Retrieve on any device",
           subtitle:
-            "No need to keep a notebook to remember your personal data anymore",
+            "No need to keep a notebook anymore.. Get your data anytime anywhere",
         },
         {
           backgroundColor: "skyblue",
@@ -41,11 +43,11 @@ export default function OnboardingScreen({ navigation }: { navigation: any }) {
           ),
           title: "Simple and quick",
           subtitle:
-            "Get started with easy signup or biometric login within seconds",
+            "Get started with easy PIN or biometric login within seconds",
         },
       ]}
-      onDone={() => navigation.navigate("Signup")}
-      onSkip={() => navigation.navigate("Signup")}
+      onDone={() => navigation.replace("Signup")}
+      onSkip={() => navigation.replace("Signup")}
       DoneButtonComponent={Done}
       transitionAnimationDuration={200}
       titleStyles={styles.titleText}
@@ -66,16 +68,18 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   startText: {
-    color: myColors.darkColor,
+    color: myColors.textColor,
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.bold,
     marginRight: 24,
   },
   titleText: {
+    color: myColors.textColor,
     fontSize: myFontSizes.xl,
     fontFamily: myFontFamilies.bold,
   },
   subText: {
+    color:myColors.tintTextColor,
     fontSize: myFontSizes.regular,
     fontFamily: myFontFamilies.regular,
   },

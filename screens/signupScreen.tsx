@@ -7,18 +7,24 @@ import {
   TouchableWithoutFeedback,
   View,
   Image,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import SignupButton from "../components/buttons/SignupButton";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { createUserWithEmail } from "../utils/methods";
+import emailJS from "@emailjs/browser";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import {useNetInfo} from "@react-native-community/netinfo";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
 
-export default function SignupScreen({ navigation }: { navigation: any }) {
+export default function SignupScreen({navigation}:{navigation:NativeStackScreenProps<RootStackParamList, 'Signup'>['navigation']}) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-
+  const netInfo = useNetInfo()
+  
   return (
     <ImageBackground
       source={require(`../assets/${bgImageUrl}`)}
@@ -49,12 +55,35 @@ export default function SignupScreen({ navigation }: { navigation: any }) {
             onChangeText={(t: string) => setUsername(t)}
           />
           <SignupButton
-            onClick={() => {
-              navigation.navigate("SetPin", {
-                username: username,
-                email: email,
-              });
-            }}
+            onClick={async () => {
+              if (netInfo.isConnected) {
+                //Generate a code
+                const code = Math.floor(100000 + Math.random() * 900000);
+                //Create a new user with this email, username and code
+                await createUserWithEmail(email,username,code.toString());
+                //Send signup email to the user
+                emailJS.send(
+                  "service_tnhdkjl",
+                  "template_x865tpo",
+                  {
+                    email: email,
+                    name: username,
+                    code: code.toString(),
+                  },
+                  "IufKPtYnPInbXK1wa"
+                );
+                //Go to verification screen
+                navigation.push("ResetPin", {
+                  username: username,
+                  email: email,
+                  code: code.toString()
+                });
+              } else {
+                //No internet
+                Alert.alert("You are not connected to the internet")
+              }
+            }
+            }
           />
         </View>
       </TouchableWithoutFeedback>
@@ -68,16 +97,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     paddingHorizontal: 32,
-    paddingVertical: 64,
+    paddingVertical: 128,
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.lightColor,
+    height:"100%",
+    backgroundColor: myColors.backgroundColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: myColors.darkColor,
+    justifyContent: "space-around",
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -85,7 +115,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   upperLeftCircle: {
-    backgroundColor: myColors.primaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 200,
     height: 200,
@@ -95,18 +125,18 @@ const styles = StyleSheet.create({
     left: -80,
   },
   lowerRightCircle: {
-    backgroundColor: myColors.primaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 100,
     height: 100,
     borderRadius: 50,
     position: "absolute",
     bottom: -70,
-    right: 50,
+    right: 20,
   },
   logoImage: {
     width: "100%",
-    height: "10%",
+    height: "15%",
     resizeMode: "contain",
   },
   titleText: {
@@ -114,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,
@@ -122,17 +152,17 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     fontSize: myFontSizes.small,
     textAlign: "center",
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   usernameInput: {
     fontSize: myFontSizes.regular,
-    marginBottom: 32,
+    marginBottom: 16,
     borderRadius: 4,
-    backgroundColor: myColors.lightGrayColor,
+    backgroundColor: myColors.tintBackgroundColor,
     padding: 12,
     fontFamily: myFontFamilies.regular,
     textAlign: "center",
     width: "90%",
-    color: myColors.primaryColor,
+    color: myColors.secondaryColor,
   },
 });

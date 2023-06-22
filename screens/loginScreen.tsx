@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,48 +11,34 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
-import { getLocalData } from "../utils/methods";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { UserContext, getLocalData } from "../utils/methods";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 const bgImageUrl = "iceBG.jpg";
 const logoUrl = "PMLogo.png";
 
-export default function LoginScreen({ navigation }: { navigation: any }) {
+export default function LoginScreen({ navigation }: { navigation:NativeStackScreenProps<RootStackParamList, 'Login'>['navigation']
+}) {
+  const deviceUser = useContext(UserContext);
   const [pinTextValue, setPinTextValue] = useState("");
-  // const [forgotPin, setForgotPin] = useState(false);
-  const [deviceUser, setDeviceUser] = useState({
-    username: "",
-    email: "",
-    pin: "",
-  });
-  // const [email, setEmail] = useState("");
-  const [deviceSettings, setDeviceSettings] = useState({
-    fingerprint: false,
-    imageURL: "../../assets/avatar.jpg",
-  });
+  const [fingerprintsettings, setFingerprintsettings] = useState(false);
 
   const authenticateFingerprint = async () => {
     const supportedAuths =
       await LocalAuthentication.supportedAuthenticationTypesAsync();
-    if (supportedAuths.includes(1) && deviceSettings.fingerprint) {
+    if (supportedAuths.includes(1) && fingerprintsettings) {
       const result = await LocalAuthentication.authenticateAsync();
       if (result.success) {
-        navigation.navigate("Main", {
-          username: deviceUser.username,
-          email: deviceUser.email,
-        });
+        navigation.replace("Home");
       }
     }
   };
+
   useEffect(() => {
-    getLocalData("user").then((data) => {
+    getLocalData("fingerprint").then((data) => {
       if (data) {
-        setDeviceUser(JSON.parse(data));
-      }
-    });
-    getLocalData("settings").then((data) => {
-      if (data) {
-        setDeviceSettings(JSON.parse(data));
+        setFingerprintsettings(JSON.parse(data));
       }
     });
     authenticateFingerprint();
@@ -65,15 +51,10 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
       const devicePin = deviceUser.pin;
       if (devicePin == value) {
         // If PIN matches, login and navigate to Main Screen
-        navigation.navigate("Main", {
-          username: deviceUser.username,
-          email: deviceUser.email,
-        });
+        navigation.replace("Home");
       } else {
         //If PIN does not match, show alert
         Alert.alert("Incorrect PIN");
-        //Also start showing forgot PIN CTA
-        // setForgotPin(true);
       }
       //Clear PIN field text
       setPinTextValue("");
@@ -97,32 +78,32 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             Welcome back, {deviceUser.username}!
           </Text>
           <Text style={styles.subTitleText}>
-            To securely access your data, please enter your PIN
+            To securely login, please enter your PIN
           </Text>
-          <Text style={styles.headerText}>Enter PIN</Text>
-
           <TextInput
             style={styles.pinInput}
+            placeholder="Enter PIN"
+            placeholderTextColor={myColors.tintPrimaryColor}
             keyboardType="numeric"
+            secureTextEntry={true}            
+            maxLength={4}
             value={pinTextValue}
             onChangeText={handleInput}
             textAlign="center"
           />
-          {/* {forgotPin ? ( */}
           <Text
             style={styles.forgotText}
             onPress={() => {
-              navigation.navigate("RetrievePin", {
+              navigation.push("RetrievePin", {
                 username: deviceUser.username,
               });
             }}
           >
             Forgot your pin?
           </Text>
-          {/* ) : null} */}
-          {deviceSettings.fingerprint ? (
+          {fingerprintsettings ? (
             <>
-              <Text style={[styles.headerText, styles.orText]}>OR</Text>
+              <Text style={[styles.orText]}>OR</Text>
               <Text style={[styles.fpText]} onPress={authenticateFingerprint}>
                 Scan your fingerprint
               </Text>
@@ -142,18 +123,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     paddingHorizontal: 32,
-    paddingVertical: 64,
+    paddingVertical: 128,
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.lightColor,
+    height: "100%",
+    backgroundColor: myColors.backgroundColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: myColors.darkColor,
+    justifyContent: "space-around",
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 8,
     overflow: "hidden",
@@ -164,10 +146,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: myFontSizes.small,
     textAlign: "center",
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   upperRightCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.primaryColor,
     opacity: 0.8,
     width: 200,
     height: 200,
@@ -177,7 +159,7 @@ const styles = StyleSheet.create({
     right: -120,
   },
   lowerRightCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.primaryColor,
     opacity: 0.8,
     width: 100,
     height: 100,
@@ -188,54 +170,46 @@ const styles = StyleSheet.create({
   },
   logoImage: {
     width: "100%",
-    height: 64,
+    height: "15%",
     resizeMode: "contain",
   },
   welcomeText: {
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    margin: 16,
+    margin: 8,
     fontFamily: myFontFamilies.bold,
-    color: myColors.darkColor,
-  },
-  headerText: {
-    fontSize: myFontSizes.large,
-    textAlign: "center",
-    marginTop: 8,
-    fontFamily: myFontFamilies.bold,
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
   forgotText: {
     fontSize: myFontSizes.xs,
     textDecorationLine: "underline",
     fontFamily: myFontFamilies.regular,
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   pinInput: {
-    fontSize: myFontSizes.xl,
+    fontSize: myFontSizes.large,
+    marginBottom: 16,
     borderRadius: 8,
-    borderColor: myColors.darkColor,
-    borderWidth: 2,
-    padding: 8,
-    marginVertical: 16,
-    letterSpacing: 8,
+    backgroundColor: myColors.tintBackgroundColor,
+    padding: 12,
     fontFamily: myFontFamilies.bold,
     textAlign: "center",
-    width: 128,
-    color: myColors.darkColor,
+    width: "70%",
+    color: myColors.primaryColor,
+    letterSpacing: 2,
   },
   orText: {
     fontSize: myFontSizes.regular,
     textAlign: "center",
-    marginVertical: 32,
+    marginVertical: 16,
     fontFamily: myFontFamilies.bold,
-    color: myColors.darkGrayColor,
+    color: myColors.tintBackgroundColor,
   },
   fpText: {
-    fontSize: myFontSizes.small,
+    fontSize: myFontSizes.regular,
     textAlign: "center",
-    fontFamily: myFontFamilies.regular,
+    fontFamily: myFontFamilies.bold,
     textDecorationLine: "underline",
-    color: myColors.darkColor,
+    color: myColors.tintTextColor,
   },
 });

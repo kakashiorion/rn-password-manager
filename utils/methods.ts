@@ -4,73 +4,86 @@ import {
   doc,
   setDoc,
   getDoc,
-  updateDoc,
   getDocs,
   collection,
   deleteDoc,
 } from "firebase/firestore";
 import { myLogos } from "../styles/global";
 import * as ImagePicker from "expo-image-picker";
+import { createContext } from "react";
 
-export const getLocalData = async (key: string) => {
-  const value = await AsyncStorage.getItem(key);
-  if (value !== null) {
-    return value;
-  }
-};
-
-export function createUserWithEmail(email: string, username: string) {
+//Firebase functions
+export async function createUserWithEmail(email: string, username: string,code:string) {
   const myDocument = doc(db, "PMCollection", email);
   const data = {
-    username: username,
-    code: "",
+    code: code,
+    username:username,
   };
-  setDoc(myDocument, data, { merge: true });
+  await setDoc(myDocument, data, { merge: true });
 }
 
-export function addAccountPasswordToDB(
+export async function addAccountPasswordToDB(
   email: string,
+  accountTime :string,
   accountName: string,
   accountUserName: string,
   accountPassword: string,
   accountNotes: string
 ) {
-  const myDocument = doc(db, `PMCollection/${email}/passwords`, accountName);
+  const myDoc = doc(db, `PMCollection/${email}/accounts`,accountTime);
   const data = {
     accountName: accountName,
     accountUserName: accountUserName,
     accountPassword: accountPassword,
     accountNotes: accountNotes,
+    accountTime: accountTime,
   };
-  return setDoc(myDocument, data, { merge: true });
+  await setDoc(myDoc,data,{merge:true})
 }
 
-export function deleteAccountFromDB(email: string, accountName: string) {
-  const myDocument = doc(db, `PMCollection/${email}/passwords`, accountName);
-  deleteDoc(myDocument);
+export async function updateAccountPasswordToDB(
+  email: string,
+  accountTime: string,
+  accountName: string,
+  accountUserName: string,
+  accountPassword: string,
+  accountNotes: string
+) {
+  const myDoc = doc(db, `PMCollection/${email}/accounts`,accountTime);
+  const data = {
+    accountName: accountName,
+    accountUserName: accountUserName,
+    accountPassword: accountPassword,
+    accountNotes: accountNotes,
+    accountTime: accountTime
+  };
+  await setDoc(myDoc,data,{ merge: true })
+}
+
+export async function deleteAccountFromDB(email: string, docId: string) {
+  const myDocument = doc(db, `PMCollection/${email}/accounts`, docId);
+  await deleteDoc(myDocument);
 }
 
 export async function getAllAccountPasswordsFromDB(email: string) {
-  const myCollection = collection(db, `PMCollection/${email}/passwords`);
+  const myCollection = collection(db, `PMCollection/${email}/accounts`);
   return (await getDocs(myCollection)).docs;
 }
 
 export async function getSingleAccountPasswordFromDB(
   email: string,
-  accountName: string
+  docId: string
 ) {
-  const myDocument = doc(db, `PMCollection/${email}/passwords`, accountName);
+  const myDocument = doc(db, `PMCollection/${email}/accounts`, docId);
   return (await getDoc(myDocument)).data();
 }
 
-export function generateCode(email: string) {
+export async function updateCode(email: string,code:string) {
   const myDocument = doc(db, "PMCollection", email);
-  const val = Math.floor(100000 + Math.random() * 900000);
   const data = {
-    code: val,
+    code: code,
   };
-  setDoc(myDocument, data, { merge: true });
-  return val;
+  await setDoc(myDocument, data, { merge: true });
 }
 
 export async function getUserData(email: string) {
@@ -78,6 +91,15 @@ export async function getUserData(email: string) {
   return await getDoc(myDocument);
 }
 
+export async function updateUserName(email: string,username:string) {
+  const myDocument = doc(db, "PMCollection", email);
+  const data={
+    username:username,
+  }
+  await setDoc(myDocument,data,{merge:true});
+}
+
+//Local functions
 export function findIcon(t: string) {
   for (const item in myLogos) {
     if (t.toLowerCase().includes(item)) {
@@ -86,6 +108,12 @@ export function findIcon(t: string) {
   }
 }
 
+export const getLocalData = async (key: string) => {
+  return await AsyncStorage.getItem(key);
+  
+};
+
+//Image functions
 export async function openImagePickerAsync() {
   const permissionResult =
     await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,3 +126,12 @@ export async function openImagePickerAsync() {
   const pickerResult = await ImagePicker.launchImageLibraryAsync();
   return pickerResult;
 }
+
+
+export const emptyUser = {
+  username: "",
+  email: "",
+  pin: "",
+}
+
+export const UserContext = createContext(emptyUser);

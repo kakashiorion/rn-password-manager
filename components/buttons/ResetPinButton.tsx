@@ -23,13 +23,18 @@ export function GetCodeButton(props: ResetPinButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 4,
+    borderRadius: 8,
     paddingHorizontal: 32,
     paddingVertical: 12,
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.secondaryColor,
+    shadowColor: myColors.tintBackgroundColor,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   buttonText: {
-    color: myColors.darkColor,
+    color: myColors.backgroundColor,
     fontSize: myFontSizes.large,
     fontFamily: myFontFamilies.bold,
   },

@@ -10,23 +10,27 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
 import { GetCodeButton } from "../components/buttons/ResetPinButton";
-import { generateCode, getUserData } from "../utils/methods";
-import { RouteProp } from "@react-navigation/native";
+import { getUserData, updateCode } from "../utils/methods";
 import emailJS from "@emailjs/browser";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useRoute } from "@react-navigation/native";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
 
 export default function RetrievePinScreen({
-  route,
   navigation,
-}: {
-  route: RouteProp<{ params: { username: string; email: string } }, "params">;
-  navigation: any;
+}:{
+  navigation:NativeStackScreenProps<RootStackParamList, 'RetrievePin'>['navigation']
 }) {
+
+  const route = useRoute<NativeStackScreenProps<RootStackParamList, 'RetrievePin'>['route']>()
   const [email, setEmail] = useState("");
+  const netInfo = useNetInfo()
+  
   return (
     <ImageBackground
       source={require(`../assets/${bgImageUrl}`)}
@@ -42,53 +46,52 @@ export default function RetrievePinScreen({
           ></Image>
           <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
-            Looks like you forgot your PIN. Don't worry. We will send a code to
+            Looks like you forgot your PIN. Don't worry.. We will send a reset code to
             your email.
           </Text>
           <TextInput
             style={styles.usernameInput}
             placeholder="Enter your Email"
+            placeholderTextColor={myColors.tintSecondaryColor}
             value={email}
             onChangeText={(t: string) => setEmail(t)}
           />
           <GetCodeButton
             onClick={async () => {
-              //Check if email is registered
-              const val = await getUserData(email);
-              if (val.exists()) {
-                //If yes, navigate to reset pin screen
-                navigation.navigate("ResetPin", {
-                  username: route.params.username,
-                  email: email,
-                });
-                //Meanwhile, generate a new code in FireDB for this user
-                const code = generateCode(email);
-                //TODO:Email code to the user
-                emailJS.send(
-                  "service_tnhdkjl",
-                  "template_x865tpo",
-                  {
+              if (netInfo.isConnected){
+                //Check if email is registered
+                const val = await getUserData(email);
+                if (val.exists()) {
+                  //Generate a new code and update in FireDB
+                  const code = Math.floor(100000 + Math.random() * 900000);
+                  await updateCode(email,code.toString());
+                  //If yes, navigate to reset pin screen
+                  navigation.push("ResetPin", {
+                    username: route.params.username,
                     email: email,
-                    name: route.params.username,
-                    code: code.toString(),
-                  },
-                  "IufKPtYnPInbXK1wa"
-                );
+                    code:code.toString()
+                  });
+                  //Email code to the user
+                  emailJS.send(
+                    "service_tnhdkjl",
+                    "template_x865tpo",
+                    {
+                      email: email,
+                      name: route.params.username,
+                      code: code.toString(),
+                    },
+                    "IufKPtYnPInbXK1wa"
+                  );
+                } else {
+                  //Unregistered email
+                  Alert.alert("No such email is registered!");
+                }
               } else {
-                //If no, show unregistered error
-                Alert.alert("No such email is registered!");
+                //No internet
+                Alert.alert("You are not connected to the internet")
               }
             }}
           />
-
-          <Text
-            style={styles.rememberText}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            I remember my PIN!
-          </Text>
         </View>
       </TouchableWithoutFeedback>
     </ImageBackground>
@@ -101,16 +104,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     paddingHorizontal: 32,
-    paddingVertical: 64,
+    paddingVertical: 128,
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.lightColor,
+    height: "100%",
+    backgroundColor: myColors.backgroundColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: myColors.darkColor,
+    justifyContent: "space-around",
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -118,7 +122,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   upperLeftCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 200,
     height: 200,
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
     left: -80,
   },
   lowerRightCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 100,
     height: 100,
@@ -136,13 +140,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -70,
     right: 50,
-  },
-  rememberText: {
-    marginVertical: 16,
-    fontSize: myFontSizes.xs,
-    textDecorationLine: "underline",
-    fontFamily: myFontFamilies.regular,
-    color: myColors.primaryColor,
   },
   logoImage: {
     width: "100%",
@@ -154,25 +151,25 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,
     marginTop: 4,
-    marginBottom: 32,
+    marginBottom: 16,
     fontSize: myFontSizes.small,
     textAlign: "center",
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   usernameInput: {
     fontSize: myFontSizes.regular,
-    marginBottom: 32,
+    marginBottom: 16,
     borderRadius: 4,
-    backgroundColor: myColors.lightGrayColor,
+    backgroundColor: myColors.tintBackgroundColor,
     padding: 12,
     fontFamily: myFontFamilies.regular,
     textAlign: "center",
     width: "90%",
-    color: myColors.primaryColor,
+    color: myColors.textColor,
   },
 });

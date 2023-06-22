@@ -10,35 +10,33 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { myColors, myFontFamilies, myFontSizes } from "../styles/global";
-import { getUserData } from "../utils/methods";
-import { RouteProp } from "@react-navigation/native";
+import { RootStackParamList, myColors, myFontFamilies, myFontSizes } from "../styles/global";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useRoute } from "@react-navigation/native";
 
 const bgImageUrl = "mainBackgroundImage.jpg";
 const logoUrl = "PMLogo.png";
 
 export default function ResetPinScreen({
-  route,
   navigation,
-}: {
-  route: RouteProp<{ params: { username: string; email: string } }, "params">;
-  navigation: any;
+}:{
+  navigation:NativeStackScreenProps<RootStackParamList, 'ResetPin'>['navigation']
 }) {
+  
+  const route = useRoute<NativeStackScreenProps<RootStackParamList, 'ResetPin'>['route']>()
   const [codeTextValue, setCodeTextValue] = useState("");
   const handleInput = async (value: string) => {
     setCodeTextValue(value);
     if (value.length > 5) {
-      //Try to match entered code from DB
-      const dbCode = await getUserData(route.params.email);
-      // If Code matches, navigate to Home Screen
-      if (dbCode.exists() && dbCode.data()["code"] == value) {
-        navigation.navigate("SetPin", {
+      // If Code matches, navigate to Set PIN Screen
+      if (value==route.params.code) {
+        navigation.replace("SetPin", {
           username: route.params.username,
           email: route.params.email,
         });
       } else {
         //If Code does not match, show alert
-        Alert.alert("Incorrect Code. Please check again!");
+        Alert.alert("Incorrect Code.. Please try again!");
       }
       //Clear Code field text
       setCodeTextValue("");
@@ -60,35 +58,18 @@ export default function ResetPinScreen({
           ></Image>
           <Text style={styles.titleText}>Hi {route.params.username}!</Text>
           <Text style={styles.subTitleText}>
-            We have sent a special 6-digit code to your email address!
-          </Text>
-          <Text style={styles.subTitleText}>{route.params.email}</Text>
-          <Text
-            style={styles.changeEmailText}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            (Not your emailID?)
+            We have sent a special 6-digit code to your email address: {route.params.email}
           </Text>
           <Text style={styles.headerText}>Enter the code below!</Text>
-
           <TextInput
             style={styles.codeInput}
             placeholder="000000"
+            placeholderTextColor={myColors.tintSecondaryColor}
             keyboardType="numeric"
             value={codeTextValue}
             onChangeText={handleInput}
             textAlign="center"
           />
-          <Text
-            style={styles.rememberText}
-            onPress={() => {
-              navigation.navigate("Login");
-            }}
-          >
-            I remember my PIN!
-          </Text>
         </View>
       </TouchableWithoutFeedback>
     </ImageBackground>
@@ -101,16 +82,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     paddingHorizontal: 32,
-    paddingVertical: 64,
+    paddingVertical: 128,
   },
   mainContainer: {
     width: "100%",
-    backgroundColor: myColors.lightColor,
+    height: "100%",
+    backgroundColor: myColors.backgroundColor,
     borderRadius: 16,
     padding: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: myColors.darkColor,
+    justifyContent: "space-around",
+    shadowColor: myColors.tintBackgroundColor,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -118,7 +100,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   upperLeftCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 200,
     height: 200,
@@ -128,7 +110,7 @@ const styles = StyleSheet.create({
     left: -80,
   },
   lowerRightCircle: {
-    backgroundColor: myColors.tertiaryColor,
+    backgroundColor: myColors.secondaryColor,
     opacity: 0.8,
     width: 100,
     height: 100,
@@ -137,23 +119,9 @@ const styles = StyleSheet.create({
     bottom: -70,
     right: 50,
   },
-  changeEmailText: {
-    fontSize: myFontSizes.xs,
-    textDecorationLine: "underline",
-    fontFamily: myFontFamilies.regular,
-    color: myColors.primaryColor,
-    marginBottom: 16,
-  },
-  rememberText: {
-    marginVertical: 16,
-    fontSize: myFontSizes.xs,
-    textDecorationLine: "underline",
-    fontFamily: myFontFamilies.regular,
-    color: myColors.primaryColor,
-  },
   logoImage: {
     width: "100%",
-    height: "10%",
+    height: "15%",
     resizeMode: "contain",
   },
   titleText: {
@@ -161,7 +129,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: myFontSizes.xl,
     textAlign: "center",
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
   subTitleText: {
     fontFamily: myFontFamilies.regular,
@@ -169,25 +137,24 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: myFontSizes.small,
     textAlign: "center",
-    color: myColors.darkGrayColor,
+    color: myColors.tintTextColor,
   },
   headerText: {
     fontSize: myFontSizes.large,
     textAlign: "center",
-    marginTop: 8,
+    marginTop: 16,
     fontFamily: myFontFamilies.bold,
+    color:myColors.textColor,
   },
   codeInput: {
     fontSize: myFontSizes.xl,
-    borderRadius: 8,
-    borderColor: myColors.darkColor,
-    borderWidth: 2,
-    padding: 8,
+    padding: 12,
     marginVertical: 16,
     letterSpacing: 8,
+    backgroundColor: myColors.tintBackgroundColor,
     fontFamily: myFontFamilies.bold,
     textAlign: "center",
     width: 192,
-    color: myColors.darkColor,
+    color: myColors.textColor,
   },
 });
