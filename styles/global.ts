@@ -103,5 +103,6 @@ export type HomeStackParamList ={
     account:DocumentData,
     email:string,
   },
+  Login: undefined,
 }
 

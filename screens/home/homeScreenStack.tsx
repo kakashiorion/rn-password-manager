@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ViewAccountScreen from "./viewAccountScreen";
 import HomeScreen from "./homeScreen";
 import SettingsScreen from "./settingsScreen";
+import LoginScreen from "../loginScreen";
 
 const HomeStack = createNativeStackNavigator();
 
@@ -41,6 +42,13 @@ export default function HomeScreenStack() {
         options={{
           headerShown: false,
           animation: "slide_from_right",
+        }}
+      />
+      <HomeStack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{
+          headerShown: false,
         }}
       />
     </HomeStack.Navigator>

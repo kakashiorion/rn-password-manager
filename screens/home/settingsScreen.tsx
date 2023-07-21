@@ -71,6 +71,11 @@ export default function SettingsScreen({navigation}:{
     })
   }
 
+  const logOut =()=>{
+    navigation.pop();
+    navigation.replace("Login");
+  }
+
   const getUserSettingsLocal = useCallback(async ()=>{
     getLocalData("fingerprint").then((data) => {
       if (data) {
@@ -149,6 +154,7 @@ export default function SettingsScreen({navigation}:{
           />
         </View> */}
       </View>
+      <Text style={styles.logoutText} onPress={()=>logOut()}>LOGOUT</Text>
     </View>
   );
 }
@@ -205,6 +211,13 @@ const styles = StyleSheet.create({
   pinText:{
     fontFamily: myFontFamilies.regular,
     color: myColors.tintTextColor,
+    fontSize: myFontSizes.regular,
+    marginBottom: 16,
+    textDecorationLine: "underline",
+  },
+  logoutText:{
+    fontFamily: myFontFamilies.regular,
+    color: myColors.primaryColor,
     fontSize: myFontSizes.regular,
     marginBottom: 16,
     textDecorationLine: "underline",
