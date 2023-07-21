@@ -216,11 +216,10 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   logoutText:{
-    fontFamily: myFontFamilies.regular,
+    fontFamily: myFontFamilies.bold,
     color: myColors.primaryColor,
     fontSize: myFontSizes.regular,
     marginBottom: 16,
-    textDecorationLine: "underline",
   },
   settingsMainContainer: {
     paddingVertical: 16,

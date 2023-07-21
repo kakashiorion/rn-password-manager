@@ -11,9 +11,12 @@ import RetrievePinScreen from "./screens/retrievePinScreen";
 import ResetPinScreen from "./screens/resetPinScreen";
 import * as SplashScreen from "expo-splash-screen";
 import HomeScreenStack from "./screens/home/homeScreenStack";
+import {LogBox} from 'react-native';
 
 const LoginStack = createNativeStackNavigator();
 const SignupStack = createNativeStackNavigator();
+
+LogBox.ignoreAllLogs();
 
 export default function App() {
   const [loaded] = useFonts({
