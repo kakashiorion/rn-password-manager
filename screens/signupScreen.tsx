@@ -63,14 +63,14 @@ export default function SignupScreen({navigation}:{navigation:NativeStackScreenP
                 await createUserWithEmail(email,username,code.toString());
                 //Send signup email to the user
                 emailJS.send(
-                  "service_tnhdkjl",
-                  "template_x865tpo",
+                  "service_s4q446u",
+                  "template_s7obdqb",
                   {
                     email: email,
                     name: username,
                     code: code.toString(),
                   },
-                  "IufKPtYnPInbXK1wa"
+                  "9_66Gz36slYB-nUQo"
                 );
                 //Go to verification screen
                 navigation.push("ResetPin", {

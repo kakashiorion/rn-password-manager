@@ -14,7 +14,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -26,10 +28,16 @@
         "foregroundImage": "./assets/PMLogo.png",
         "backgroundColor": "#F8F8F8"
       },
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "package": "com.kakashi91.passwordmanager"
     },
     "web": {
       "favicon": "./assets/PMLogo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "84f6d051-835f-4805-a65a-ce521f325b96"
+      }
     }
   }
 }
