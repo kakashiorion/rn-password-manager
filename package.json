@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@emailjs/browser": "^3.11.0",
-    "@react-native-async-storage/async-storage": "1.19.1",
-    "@react-native-community/netinfo": "9.4.1",
+    "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-community/netinfo": "9.3.10",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -26,7 +26,7 @@
     "react-dom": "^18.2.0",
     "react-native": "^0.72.3",
     "react-native-onboarding-swiper": "^1.2.0",
-    "react-native-screens": "~3.23.0",
+    "react-native-screens": "3.22.0",
     "react-native-web": "^0.19.7"
   },
   "devDependencies": {
